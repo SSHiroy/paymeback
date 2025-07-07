@@ -3,6 +3,10 @@
 # dependencies
 node_modules/
 
+# Mobile devices
+android/
+ios/
+
 # Expo
 .expo/
 dist/
@@ -18,6 +22,9 @@ expo-env.d.ts
 *.key
 *.mobileprovision
 
+# Build output
+build/
+
 # Metro
 .metro-health-check*
 
@@ -32,6 +39,10 @@ yarn-error.*
 
 # local env files
 .env*.local
+
+# IDE
+.vscode/
+.idea/
 
 # typescript
 *.tsbuildinfo
