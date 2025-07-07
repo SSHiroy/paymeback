@@ -9,7 +9,11 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera"
+      },
+      "bundleIdentifier": "com.anonymous.paymeback"
     },
     "android": {
       "adaptiveIcon": {
@@ -17,7 +21,10 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.paymeback"
+      "package": "com.anonymous.paymeback",
+      "permissions": [
+        "android.permission.CAMERA"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -34,8 +41,7 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ],
-      "react-native-vision-camera"
+      ]
     ],
     "experiments": {
       "typedRoutes": true
