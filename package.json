@@ -20,10 +20,12 @@
     "expo-blur": "~14.1.5",
     "expo-camera": "~16.1.10",
     "expo-constants": "~17.1.6",
+    "expo-dev-client": "~5.2.4",
     "expo-font": "~13.3.2",
     "expo-haptics": "~14.1.4",
     "expo-image": "~2.3.2",
     "expo-linking": "~7.1.6",
+    "expo-modules-core": "^2.4.2",
     "expo-router": "~5.1.2",
     "expo-splash-screen": "~0.30.9",
     "expo-status-bar": "~2.2.3",
@@ -33,6 +35,7 @@
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.5",
+    "react-native-document-scanner-plugin": "^1.0.1",
     "react-native-gesture-handler": "~2.24.0",
     "react-native-reanimated": "~3.17.5",
     "react-native-safe-area-context": "5.4.0",
@@ -40,6 +43,7 @@
     "react-native-web": "~0.20.0",
     "react-native-webview": "13.13.5",
     "react-native-worklets-core": "^1.6.0",
+    "uri-scheme": "^1.4.9",
     "zustand": "^5.0.6"
   },
   "devDependencies": {

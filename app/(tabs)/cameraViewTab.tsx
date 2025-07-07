@@ -3,28 +3,31 @@ import { useEffect, useState } from 'react';
 import { Button, Text, View } from 'react-native';
 
 export default function CameraViewTab() {
-  const [facing, setFacing] = useState<CameraType>('back');
+  const [facing] = useState<CameraType>('back');
   const [permission, requestPermission] = useCameraPermissions();
 
   useEffect(() => {
     if (permission && !permission.granted) {
       requestPermission();
     }
-  }, [permission]);
+  }, [permission, requestPermission]);
 
   if (permission && !permission.granted) {
     return (
       <View>
         <Text>No access to camera</Text>
-        <Button title="Request Permission" onPress={requestPermission} />
+        <Button
+	  title = "Request Permission"
+	  onPress = { requestPermission }
+	/>
       </View>
     );
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <View>
       {permission && permission.granted && (
-        <CameraView style={{ flex: 1 }} facing={facing} />
+        <CameraView facing = { facing }/>
       )}
     </View>
   );

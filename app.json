@@ -11,19 +11,19 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera"
+	"NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera"
       },
       "bundleIdentifier": "com.anonymous.paymeback"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+	"foregroundImage": "./assets/images/adaptive-icon.png",
+	"backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.anonymous.paymeback",
       "permissions": [
-        "android.permission.CAMERA"
+	"android.permission.CAMERA"
       ]
     },
     "web": {
@@ -31,20 +31,26 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-    "plugins": [
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
-        }
-      ]
+  "plugins": [
+    "expo-router",
+    [
+      "expo-splash-screen",
+      {
+        "image": "./assets/images/splash-icon.png",
+        "imageWidth": 200,
+        "resizeMode": "contain",
+        "backgroundColor": "#ffffff"
+      }
     ],
-    "experiments": {
-      "typedRoutes": true
-    }
+    [
+      "react-native-document-scanner-plugin",
+      {
+        "cameraPermission": "We need camera access, so you can scan bills and receipts!"
+      }
+    ]
+  ],
+  "experiments": {
+    "typedRoutes": true
+  }
   }
 }
