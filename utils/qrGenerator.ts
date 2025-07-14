@@ -7,7 +7,6 @@ function TL(tag: string, value: string): string {
     return `${tag}${value.length.toString().padStart(2, "0")}${value}`;
 }
 
-// Generate PayNow QR Payload
 function generatePayNowQR(phone: string, amount: number, note: string, expiry = "20261212000800"): string {
     let payload = TL("00", "01");            // Payload Format Indicator
     payload += TL("01", "12");               // Point of Initiation Method: Dynamic
@@ -46,7 +45,7 @@ function generatePayNowQR(phone: string, amount: number, note: string, expiry = 
     return fullPayload;
 }
 
-// --- Interactive CLI Logic ---
+// Interactive CLI Logic
 function getValidPhone(): string {
     while (true) {
         const input = readlineSync.question("Enter PayNow mobile number (e.g. +6590123456): ").trim();
