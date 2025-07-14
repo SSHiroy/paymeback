@@ -1,84 +1,35 @@
-import QRCode from "qrcode";
 import crc from "crc";
-import readlineSync from "readline-sync";
 
-// TLV Helper
-function TL(tag: string, value: string): string {
-    return `${tag}${value.length.toString().padStart(2, "0")}${value}`;
-}
+/**
+ * 
+ * @param phone The Singapore number without +65
+ * @param amount An amount MUST BE GREATER THAN 1
+ * @param note A note to the payee MUST BE LESSER THAN 8 CHARACTERS
+ * @param expiry An expiry in YYYYMMDD
+ * @returns 
+ */
 
-function generatePayNowQR(phone: string, amount: number, note: string, expiry = "20261212000800"): string {
-    let payload = TL("00", "01");            // Payload Format Indicator
-    payload += TL("01", "12");               // Point of Initiation Method: Dynamic
+const aWeekFromNow = (): string => {
+  const date = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}${month}${day}`;
+};
 
-    const merchantInfo =
-        TL("00", "SG.PAYNOW") +              // Globally Unique Identifier
-        TL("01", "0") +                      // Proxy Type: Mobile
-        TL("02", phone) +                    // Phone number
-        TL("03", "1") +                      // Editable amount: true
-        TL("04", expiry);                    // Expiry timestamp
+export function generatePayNowQR(phone: string, amount: number, 
+                                 note: string = 'paymeback Request', 
+                                 expiry: string = aWeekFromNow()): string {
 
-    payload += TL("26", merchantInfo);       // Merchant Account Info
-    payload += TL("52", "0000");             // Merchant Category Code
-    payload += TL("53", "702");              // Currency (SGD)
-    payload += TL("54", amount.toFixed(2));  // Amount
-    payload += TL("58", "SG");               // Country Code
-    payload += TL("59", "NA");               // Merchant Name
-    payload += TL("60", "Singapore");        // Merchant City
+    const payString = '00020101021126500009SG.PAYNOW010100211+65' +
+                       `${phone}030100408${expiry}5204000053037025404` +
+                       `${amount}5802SG5902NA6009Singapore62080104` +
+                       `${note}6304`;
 
-    if (note) {
-        payload += TL("62", TL("01", note)); // Additional data (note)
-    }
+    const crcValue = crc.crc16ccitt(Buffer.from(payString, 'utf-8'))
+                        .toString(16).toUpperCase().padStart(4, "0");
 
-    payload += "6304"; // CRC placeholder
-
-    // CRC16-CCITT-FALSE
-    const crcValue = crc.crc16ccitt(Buffer.from(payload, 'utf-8')).toString(16).toUpperCase().padStart(4, "0");
-
-    const fullPayload = payload + crcValue;
-
-    QRCode.toFile("paynow_qr.png", fullPayload, err => {
-        if (err) throw err;
-        console.log("QR Code saved to paynow_qr.png");
-    });
+    const fullPayload = payString + crcValue;
 
     return fullPayload;
 }
-
-// Interactive CLI Logic
-function getValidPhone(): string {
-    while (true) {
-        const input = readlineSync.question("Enter PayNow mobile number (e.g. +6590123456): ").trim();
-        if (input.startsWith("+65") && input.length === 11) {
-            return input;
-        } else if (!input.startsWith("+65") && input.length === 8) {
-            return "+65" + input;
-        } else {
-            console.log("Invalid phone number. It must start with '+65' and be 11 characters long.");
-        }
-    }
-}
-
-function getValidAmount(): number {
-    while (true) {
-        const input = readlineSync.question("Enter amount to request (e.g. 12.34): ").trim();
-        const amount = parseFloat(input);
-        if (!isNaN(amount) && amount > 0) {
-            return amount;
-        } else {
-            console.log("Invalid amount. Please enter a positive number.");
-        }
-    }
-}
-
-function main() {
-    const phone = getValidPhone();
-    const amount = getValidAmount();
-    const note = readlineSync.question("Enter reference (e.g. customer name, invoice ID): ").trim();
-
-    const payload = generatePayNowQR(phone, amount, note);
-    console.log("PayNow QR Payload:");
-    console.log(payload);
-}
-
-main();
