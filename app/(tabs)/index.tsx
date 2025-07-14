@@ -1,9 +1,12 @@
+import GlobalStyles from "@/app/styles/globalStyles";
+import { ensureDirExists } from "@/utils/filePaths";
 import { useRouter } from "expo-router";
-import GlobalStyles from "../styles/globalStyles";
-import { Button, Text, View, ScrollView, StyleSheet } from "react-native";
+import { Button, ScrollView, StyleSheet, Text, View } from "react-native";
 
 export default function Home() {
+  ensureDirExists();
   const router = useRouter();
+  
   return (
     <View style = { GlobalStyles.parentView }>
       <Text>Recent receipts</Text>
