@@ -19,62 +19,70 @@ import MlkitOcr from 'react-native-mlkit-ocr';
 * 
 */
 
-export async function parseThis(uri: string) {
+export async function parseThis(uri: string): Promise<BillForm | Error> {
 	try {
 		const result = await MlkitOcr.detectFromUri(uri);
-
+		
 		const priceRegex = /^.\d+[.]\d{2}$/;
 		const descriptionRegex = /^.*[a-zA-Z]{3,}.*$/;
 		
-		const potentialPrices = result.flatMap(price => price.lines.flatMap(b => b.elements))
-									  .filter(price => priceRegex.test(price.text));
-		const products = [];
-
+		const allElements = result.flatMap(page => page.lines.flatMap(line => line.elements));
+		const potentialPrices = allElements.filter(el => priceRegex.test(el.text) && el.bounding?.top !== undefined);
+		
+		const products: Product[] = [];
+		
 		for (let i = 0; i < potentialPrices.length; i++) {
-			const target = potentialPrices[i].bounding.top;
+			const priceElement = potentialPrices[i];
+			const targetTop = priceElement.bounding.top;
+			
 			const excludeKeywords = ['gst', 'bill', 'total', 'card', 'credit', 'debit', 'rcpt', 'tax', 'cash', 'change', 'thank', 'closed'];
-			const description: string = result
-											.flatMap(a => a.lines)
-											.filter(a => descriptionRegex.test(a.text))
-											.reduce((prev, curr) => 
-														Math.abs(curr.bounding.top - target) 
-														< Math.abs(prev.bounding.top - target)
-													? curr : prev)
 			
-											.text.replace(/(\r\n|\n|\r|\d)/g, '').trim() || "not found";
-
-			if (excludeKeywords.
-					some(word => description.toLowerCase().includes(word))) {
-				continue;
-			}
+			// Get the closest description line to the price's vertical position
+			const candidateLines = result.flatMap(page => page.lines).filter(line => descriptionRegex.test(line.text));
 			
-			const product: Product = {
-				id: Date.now() + i,
-				name: description,
-				price: Number(potentialPrices[i].text.replace(/[^0-9.]/g, '')),
-				persons: [],
-				isMine: false,
-			}
-			products.push(product);
+			if (candidateLines.length === 0) continue;
+			
+			const closestLine = candidateLines.reduce((prev, curr) =>
+				Math.abs(curr.bounding.top - targetTop) < Math.abs(prev.bounding.top - targetTop)
+			? curr
+			: prev
+		);
+		
+		let description = closestLine?.text?.replace(/(\r\n|\n|\r|\d)/g, '').trim() ?? '';
+		
+		if (
+			!description ||
+			excludeKeywords.some(word => description.toLowerCase().includes(word))
+		) {
+			continue;
 		}
 		
-		const billForm: BillForm = {
-			storeName: result
-						.flatMap(a => a.lines)
-						.reduce((a, b) => 
-									a.bounding.top 
-									< b.bounding.top 
-								? a : b)
-						.text
-						.replace(/(\r\n|\n|\r)/g, ' ') || 'Store Name...',
-			products: products,
-		}
-
-		await createJson(billForm);
-		await logAllFiles();
-		return billForm
+		const price = Number(priceElement.text.replace(/[^0-9.]/g, ''));
+		if (isNaN(price)) continue;
 		
-	} catch (error) {
-		return error;
+		const product = new Product(Date.now() + i, description, price, [], false);
+		products.push(product);
 	}
+	
+	// Get topmost line for store name
+	const allLines = result.flatMap(page => page.lines);
+	const topLine = allLines.length > 0
+	? allLines.reduce((a, b) => (a.bounding.top < b.bounding.top ? a : b))
+	: { text: 'Store Name' };
+	
+	const storeName = topLine.text?.replace(/(\r\n|\n|\r)/g, ' ').trim() || 'Store Name';
+	
+	const billForm: BillForm = {
+		storeName,
+		products,
+	};
+	
+	await createJson(billForm);
+	await logAllFiles();
+	
+	return billForm;
+} catch (error) {
+	console.error('Error in parseThis:', error);
+	return error as Error;
+}
 }

@@ -31,9 +31,10 @@ export default function TabLayout() {
 					}}
 				/>
 				<Tabs.Screen
-					name = "test"
+					name = "sharePayment"
 					options = {{
-						title: "Test"
+						title: "Share Payments",
+						href: null,
 					}}
 				/>				
 			</Tabs>
