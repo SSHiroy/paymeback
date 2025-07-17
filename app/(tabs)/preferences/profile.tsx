@@ -23,7 +23,7 @@ export default function Profile() {
             setPhoneNumber(
                 phone.replace(/\+65\s?/, '')     // remove +65 or +65 with space
                      .replace(/[^0-9]/g, '')     // remove non-digits
-                     .slice(0, 8); // limit 8 digits
+                     .slice(0, 8), // limit 8 digits
             );
             
             saveUserToFile(name, phoneNumber)
@@ -70,7 +70,13 @@ export default function Profile() {
               .replace(/\+65\s?/, '')     // remove +65 or +65 with space
               .replace(/[^0-9]/g, '')     // remove non-digits
               .slice(0, 8);               // 8 digits limit
-            setPhoneNumber(cleaned);
+            // setPhoneNumber(cleaned);
+            if (cleaned.length === 8 && !/^[89]/.test(cleaned)) {
+                setPhoneNumber('');
+            }
+            else {
+                setPhoneNumber(cleaned); // clear invalid input
+            }
         }}
         keyboardType="number-pad"
         maxLength={8}
