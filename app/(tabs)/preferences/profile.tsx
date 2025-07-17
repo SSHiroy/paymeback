@@ -21,7 +21,9 @@ export default function Profile() {
             
             setName(name);
             setPhoneNumber(
-                phone.replace(/[^0-9]/g, '').slice(0, 8) // Clean and trim to 8 digits
+                phone.replace(/\+65\s?/, '')     // remove +65 or +65 with space
+                     .replace(/[^0-9]/g, '')     // remove non-digits
+                     .slice(0, 8); // limit 8 digits
             );
             
             saveUserToFile(name, phoneNumber)
@@ -63,7 +65,11 @@ export default function Profile() {
         placeholderTextColor={'grey'}
         value={phoneNumber}
         onChangeText={(text) => {
-            const cleaned = text.replace(/[^0-9]/g, '').slice(0, 8);
+            // remove +65 prefix if it exists, then strip non-digits and limit to 8
+            const cleaned = text
+              .replace(/\+65\s?/, '')     // remove +65 or +65 with space
+              .replace(/[^0-9]/g, '')     // remove non-digits
+              .slice(0, 8);               // 8 digits limit
             setPhoneNumber(cleaned);
         }}
         keyboardType="number-pad"
