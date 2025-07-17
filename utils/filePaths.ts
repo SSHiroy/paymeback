@@ -42,6 +42,7 @@ export async function readUser(): Promise<User | null> {
         const json = await readAsStringAsync(fileUri, { encoding: EncodingType.UTF8 });
         const user: User = JSON.parse(json);
         return user;
+
     } catch (error) {
         console.error('Error reading user file:', error);
         return null;
@@ -113,7 +114,6 @@ export async function getLastCreatedFile() {
         return null;
     }
 }
-
 
 export async function updateJson(bill: BillForm) {
     try {

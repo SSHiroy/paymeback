@@ -1,18 +1,22 @@
 import { BillForm, PayData, Product, User } from '@/types/types';
-import * as Contacts from 'expo-contacts';
-import * as FileSystem from 'expo-file-system';
-import React, { useEffect, useState } from 'react';
-import { Button, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
-
 import { getLastCreatedFile, readUser } from '@/utils/filePaths';
 import { generatePaymentData } from '@/utils/generatePayments';
 import { generatePayNowQR } from '@/utils/qrGenerator';
+import * as Contacts from 'expo-contacts';
+import * as FileSystem from 'expo-file-system';
+import { cacheDirectory } from 'expo-file-system';
+import { shareAsync } from 'expo-sharing';
+import React, { useEffect, useRef, useState } from 'react';
+import { Button, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
+import QRCode from 'react-native-qrcode-svg';
 
 export default function SharePayment() {
 	const [contactInfoMap, setContactInfoMap] = useState<Record<string, { name: string; phone: string }>>({});
 	const [paymentData, setPaymentData] = useState<Map<string, PayData>>(new Map());
 	const [user, setUser] = useState<User | null>(null);
 	const [paymentNote, setPaymentNote] = useState<string>('paymeback QRCode');
+	const [selectedPersonID, setSelectedPersonID] = useState<string | null>(null);
+	const qrRef = useRef<any>(null);
 	
 	useEffect(() => {
 		async function loadUser() {
@@ -100,20 +104,38 @@ export default function SharePayment() {
 		}
 	}, [paymentData]);
 	
-	const handleShareLog = async (personID: string) => {
-		console.log("test");
+	const handleShare = async (personID: string) => {
+		setSelectedPersonID(personID);
 		const contact = contactInfoMap[personID];
 		const payment = paymentData.get(personID);
 		
 		if (!user || !payment) {
-			!user ? console.log("no user") : console.log('no payment')
+			!user ? console.log("No user loaded") : console.log("No payment data for this person");
 			return;
 		}
-
-		console.log(
-			generatePayNowQR(user.phoneNumber, payment.total, paymentNote || "paymeback QR")
-		);
-		console.log("qr shared")
+		
+		try {
+			const qrText = generatePayNowQR(user.phoneNumber, payment.total, paymentNote || "paymeback QR");
+			
+			if (!qrRef.current) {
+				console.log("QR code ref not ready");
+				return;
+			}
+			
+			qrRef.current.toDataURL(async (base64Data: string) => {
+				const qrFilePath = `${cacheDirectory}${Date.now()}.png`;
+				
+				// ✅ Write actual QR image base64 data
+				await FileSystem.writeAsStringAsync(qrFilePath, base64Data, {
+					encoding: FileSystem.EncodingType.Base64,
+				});
+				
+				await shareAsync(qrFilePath);
+			});
+			
+		} catch (err) {
+			console.error("Failed to generate or share QR code:", err);
+		}
 	};
 	
 	const renderItem = ({ item }: { item: [string, PayData] }) => {
@@ -126,10 +148,15 @@ export default function SharePayment() {
 			<View style={styles.row}>
 			<Text style={styles.name}>{name}</Text>
 			<Text style={styles.price}>${total.toFixed(2)}</Text>
-			<Button title="Log Share" onPress={() => handleShareLog(personID)} />
+			<Button title="Share QR" onPress={() => handleShare(personID)} />
 			</View>
 		);
 	};
+	
+	const qrValue =
+	selectedPersonID && paymentData.has(selectedPersonID) && user
+	? generatePayNowQR(user.phoneNumber, paymentData.get(selectedPersonID)!.total, paymentNote || "paymeback QR")
+	: "";
 	
 	return (
 		<View style={styles.container}>
@@ -149,6 +176,18 @@ export default function SharePayment() {
 		renderItem={renderItem}
 		ListEmptyComponent={<Text>No payment data available</Text>}
 		/>
+		<View style={{ position: 'absolute', left: -9999 }}>
+		{qrValue ? (
+			<View style={{ position: 'absolute', left: -9999 }}>
+			<QRCode
+			value={qrValue}
+			getRef={(c) => (qrRef.current = c)}
+			size={200}
+			ecl="H"
+			/>
+			</View>
+		) : null}
+		</View>
 		</View>
 	);
 }

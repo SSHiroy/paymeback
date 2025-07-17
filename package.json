@@ -63,6 +63,7 @@
   "devDependencies": {
     "@babel/core": "^7.28.0",
     "@react-native-community/cli": "latest",
+    "@types/qrcode": "^1.5.5",
     "@types/react": "~19.0.14",
     "eslint": "^9.31.0",
     "eslint-config-expo": "~9.2.0",

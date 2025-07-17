@@ -1,7 +1,7 @@
 import GlobalStyles from "@/app/styles/globalStyles";
-import { ensureDirExists } from "@/utils/filePaths";
+import { ensureDirExists, readUser } from "@/utils/filePaths";
 import { useRouter } from "expo-router";
-import { Button, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Button, ScrollView, StyleSheet, Text, View } from "react-native";
 
 export default function Home() {
   ensureDirExists();
@@ -9,27 +9,33 @@ export default function Home() {
   
   return (
     <View style = { GlobalStyles.parentView }>
-      <Text>Recent receipts</Text>
-      <View style = {{ flex: 1 }}>
-	{0 === 0 ? (
-	  <View>
-	    <Text>True</Text>
-	  </View>
-        ) : (
-	  <ScrollView>
-	    <Text>False</Text>
-	  </ScrollView>
-	)}
+    <Text>Recent receipts</Text>
+    <View style = {{ flex: 1 }}>
+    {0 === 0 ? (
+      <View>
+      <Text>True</Text>
       </View>
-
-      <View style = { styles.buttonWrapper }>
-	<Button
-	  title = "test"
-	  onPress = {() => {
-	    router.push("/cameraViewTab");
-	  }}
-	/>
-      </View>
+    ) : (
+      <ScrollView>
+      <Text>False</Text>
+      </ScrollView>
+    )}
+    </View>
+    
+    <View style = { styles.buttonWrapper }>
+    <Button
+    title = "test"
+    onPress = {async () => {
+      const checkUser = await readUser();
+      if (checkUser && checkUser.phoneNumber) {
+        router.push("/cameraViewTab");
+      } else {
+        Alert.alert('No user!', 'Within settings, under "Profile" set yourself as the user.');
+        return;
+      }
+    }}
+    />
+    </View>
     </View>
   );
 }
