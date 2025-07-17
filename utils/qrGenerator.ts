@@ -6,20 +6,24 @@ const daysFromNow = (days: number): string => {
   return `${year}${month}${day}`;
 };
 
-function crc16ccittFalse(data: string): number {
+function crc16ccittFalse(data: string): string {
   let crc = 0xFFFF;
-  let msb = crc >> 8;
-  let lsb = crc & 0xFF;
   
   for (let i = 0; i < data.length; i++) {
-    const c = data.charCodeAt(i);
-    let x = c ^ msb;
-    x ^= x >> 4;
-    msb = (lsb ^ (x >> 3) ^ (x << 4)) & 0xFF;
-    lsb = (x ^ (x << 5)) & 0xFF;
+    crc ^= data.charCodeAt(i) << 8;
+    
+    for (let j = 0; j < 8; j++) {
+      if ((crc & 0x8000) !== 0) {
+        crc = (crc << 1) ^ 0x1021;
+      } else {
+        crc <<= 1;
+      }
+      crc &= 0xFFFF; // Keep it 16-bit
+    }
   }
   
-  return (msb << 8) + lsb;
+  // Convert to uppercase hex string with 4 digits (padded if needed)
+  return crc.toString(16).toUpperCase().padStart(4, '0');
 }
 
 /**
@@ -39,8 +43,10 @@ export function generatePayNowQR(
     
     const payString = '00020101021126500009SG.PAYNOW010100211+65' +
     `${phone}030100408${daysFromNow(expiry)}5204000053037025404` +
-    `${amount}5802SG5902NA6009Singapore62080104` +
+    `${amount.toFixed(2)}5802SG5902NA6009Singapore62080104` +
     `${note}6304`;
+    console.log('payString:', payString);
+    console.log('crc:', crc16ccittFalse(payString));
     
     return payString + crc16ccittFalse(payString);
   }

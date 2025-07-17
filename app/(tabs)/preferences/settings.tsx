@@ -1,10 +1,9 @@
+import { useRouter } from "expo-router";
 import React from "react";
-import { Text, View, TouchableOpacity, StyleSheet, ScrollView, GestureResponderEvent } from "react-native";
+import { ScrollView, StyleSheet, Text, TouchableOpacity } from "react-native";
 
 export default function Settings() {
-  const onPress = (name: string) => (event: GestureResponderEvent) => {
-    console.log(`${name} pressed`);
-  };
+  const router = useRouter();
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -14,7 +13,7 @@ export default function Settings() {
 
       <TouchableOpacity
         style={styles.button}
-        onPress={onPress("Profile")}
+        onPress={() => router.push('/preferences/profile')}
         activeOpacity={0.6}
       >
         <Text style={styles.buttonText}>Profile</Text>
@@ -22,7 +21,7 @@ export default function Settings() {
 
       <TouchableOpacity
         style={styles.button}
-        onPress={onPress("General")}
+        onPress={() => console.log("General")}
         activeOpacity={0.6}
       >
         <Text style={styles.buttonText}>General</Text>
@@ -30,7 +29,7 @@ export default function Settings() {
 
       <TouchableOpacity
         style={styles.button}
-        onPress={onPress("Notifications")}
+        onPress={() => console.log("Notifications")}
         activeOpacity={0.6}
       >
         <Text style={styles.buttonText}>Notifications</Text>
@@ -38,7 +37,7 @@ export default function Settings() {
 
       <TouchableOpacity
         style={styles.button}
-        onPress={onPress("Storage and data")}
+        onPress={() => console.log("Storage and data")}
         activeOpacity={0.6}
       >
         <Text style={styles.buttonText}>Storage and data</Text>
@@ -46,7 +45,7 @@ export default function Settings() {
 
       <TouchableOpacity
         style={styles.button}
-        onPress={onPress("About Us")}
+        onPress={() => console.log("About Us")}
         activeOpacity={0.6}
       >
         <Text style={styles.buttonText}>Credits</Text>

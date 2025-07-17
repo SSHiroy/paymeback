@@ -1,4 +1,4 @@
-import { BillForm } from "@/types/types";
+import { BillForm, User } from "@/types/types";
 import { documentDirectory, EncodingType, getInfoAsync, makeDirectoryAsync, readAsStringAsync, readDirectoryAsync, writeAsStringAsync } from "expo-file-system";
 
 export const jsonDir = documentDirectory + 'receiptJsons/';
@@ -14,6 +14,37 @@ export async function ensureDirExists() {
         }
     } catch (error) {
         console.error("Error ensuring directory exists:", error);
+    }
+}
+
+export async function saveOrUpdateUser(name: string, phoneNumber: string) {
+    try {
+        const json = JSON.stringify({name: name, phoneNumber: phoneNumber}, null, 2);
+        await writeAsStringAsync(documentDirectory + 'user.json', json, {
+            encoding: EncodingType.UTF8,
+        });
+        console.log('User file saved or updated.');
+    } catch (error) {
+        console.error('Error saving or updating user file:', error);
+    }
+}
+
+export async function readUser(): Promise<User | null> {
+    try {
+        const fileUri = documentDirectory + 'user.json';
+        const fileInfo = await getInfoAsync(fileUri);
+        
+        if (!fileInfo.exists) {
+            console.warn('User file does not exist.');
+            return null;
+        }
+        
+        const json = await readAsStringAsync(fileUri, { encoding: EncodingType.UTF8 });
+        const user: User = JSON.parse(json);
+        return user;
+    } catch (error) {
+        console.error('Error reading user file:', error);
+        return null;
     }
 }
 
@@ -40,7 +71,6 @@ export async function createJson(data: any) {
         console.error("Error writing file:", error);
     }
 }
-
 
 export async function logAllFiles() {
     try {

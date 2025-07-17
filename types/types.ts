@@ -94,3 +94,8 @@ export type PayData = {
 	products: Product[],
 	total: number,
 }
+
+export type User = {
+	name: string,
+	phoneNumber: string,
+}
