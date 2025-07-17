@@ -72,6 +72,7 @@ export default function Profile() {
               .slice(0, 8);               // 8 digits limit
             // setPhoneNumber(cleaned);
             if (cleaned.length === 8 && !/^[89]/.test(cleaned)) {
+                Alert.alert('Invalid input', 'This phone number is invalid!')
                 setPhoneNumber('');
             }
             else {

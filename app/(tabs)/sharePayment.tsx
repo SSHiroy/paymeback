@@ -1,7 +1,8 @@
 import { BillForm, PayData, Product, User } from '@/types/types';
 import { getLastCreatedFile, readUser } from '@/utils/filePaths';
 import { generatePaymentData } from '@/utils/generatePayments';
-import { generatePayNowQR } from '@/utils/qrGenerator';
+import { DefaultDaysToExpiry, generatePayNowQR } from '@/utils/qrGenerator';
+import { Picker } from '@react-native-picker/picker';
 import * as Contacts from 'expo-contacts';
 import * as FileSystem from 'expo-file-system';
 import { cacheDirectory } from 'expo-file-system';
@@ -16,7 +17,29 @@ export default function SharePayment() {
 	const [user, setUser] = useState<User | null>(null);
 	const [paymentNote, setPaymentNote] = useState<string>('paymeback QRCode');
 	const [selectedPersonID, setSelectedPersonID] = useState<string | null>(null);
+	
 	const qrRef = useRef<any>(null);
+	const [selectedExpiryInDays, setSelectedExpiryInDays] = useState(DefaultDaysToExpiry);
+	const NumberPicker = ({ min = 1, max = 89, value, onValueChange }) => {
+		return (
+			<View style={styles.pickerContainer}>
+			<Text style={styles.label}>Select Expiry (in days from now):</Text>
+			<View style={styles.pickerWrapper}>
+			<Picker
+			selectedValue={value}
+			style={styles.numberPicker}
+			onValueChange={onValueChange}
+			dropdownIconColor="#333"
+			itemStyle={{ color: '#333' }}
+			>
+			{Array.from({ length: max - min + 1 }, (_, i) => (
+				<Picker.Item key={i} label={`${min + i}`} value={min + i} />
+			))}
+			</Picker>
+			</View>
+			</View>
+		);
+	};
 	
 	useEffect(() => {
 		async function loadUser() {
@@ -115,7 +138,7 @@ export default function SharePayment() {
 		}
 		
 		try {
-			const qrText = generatePayNowQR(user.phoneNumber, payment.total, paymentNote || "paymeback QR");
+			const qrText = generatePayNowQR(user.phoneNumber, payment.total, paymentNote || "paymeback QR", selectedExpiryInDays);
 			
 			if (!qrRef.current) {
 				console.log("QR code ref not ready");
@@ -125,7 +148,6 @@ export default function SharePayment() {
 			qrRef.current.toDataURL(async (base64Data: string) => {
 				const qrFilePath = `${cacheDirectory}${Date.now()}.png`;
 				
-				// ✅ Write actual QR image base64 data
 				await FileSystem.writeAsStringAsync(qrFilePath, base64Data, {
 					encoding: FileSystem.EncodingType.Base64,
 				});
@@ -155,7 +177,7 @@ export default function SharePayment() {
 	
 	const qrValue =
 	selectedPersonID && paymentData.has(selectedPersonID) && user
-	? generatePayNowQR(user.phoneNumber, paymentData.get(selectedPersonID)!.total, paymentNote || "paymeback QR")
+	? generatePayNowQR(user.phoneNumber, paymentData.get(selectedPersonID)!.total, paymentNote || "paymeback QR", selectedExpiryInDays)
 	: "";
 	
 	return (
@@ -170,6 +192,12 @@ export default function SharePayment() {
 		}}
 		maxLength={20}
 		/>
+		<NumberPicker
+		min={1}
+		max={89}
+		value={selectedExpiryInDays}
+		onValueChange={setSelectedExpiryInDays}
+		/>
 		<FlatList
 		data={Array.from(paymentData.entries())}
 		keyExtractor={([personID]) => personID}
@@ -183,7 +211,7 @@ export default function SharePayment() {
 			value={qrValue}
 			getRef={(c) => (qrRef.current = c)}
 			size={200}
-			ecl="H"
+			ecl="M"
 			/>
 			</View>
 		) : null}
@@ -193,9 +221,35 @@ export default function SharePayment() {
 }
 
 const styles = StyleSheet.create({
+	pickerContainer: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		marginBottom: 20,
+	},
+	label: {
+		flex: 1,
+		fontSize: 16,
+		marginRight: 10,
+		width: 130,
+	},
+	pickerWrapper: {
+		flex: 1,
+		borderWidth: 1,
+		borderColor: '#ccc',
+		borderRadius: 5,
+		backgroundColor: '#f9f9f9',
+	},
+	numberPicker: {
+		height: 52,
+		color: '#333',
+	},
 	container: {
 		flex: 1,
 		padding: 20,
+	},
+	picker: {
+		height: 150,
+		width: '100%',
 	},
 	row: {
 		flexDirection: 'row',

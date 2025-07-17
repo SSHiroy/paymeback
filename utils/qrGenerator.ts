@@ -6,6 +6,8 @@ const daysFromNow = (days: number): string => {
   return `${year}${month}${day}`;
 };
 
+export const DefaultDaysToExpiry = 7;
+
 function crc16ccittFalse(data: string): string {
   let crc = 0xFFFF;
   
@@ -39,7 +41,7 @@ export function generatePayNowQR(
   phone: string, 
   amount: number, 
   note: string = 'paymeback Request', 
-  expiry: number = 7): string {
+  expiry: number = DefaultDaysToExpiry): string {
     
     const payString = '00020101021126500009SG.PAYNOW010100211+65' +
     `${phone}030100408${daysFromNow(expiry)}5204000053037025404` +

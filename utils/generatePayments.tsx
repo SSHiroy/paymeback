@@ -22,7 +22,7 @@ export function generatePaymentData(billForm: BillForm): Map<string, PayData> {
             const price = product.price ?? 0;
             const personsCount = persons.length || 1;
             
-            payData.total += Math.floor((price / personsCount) * 100) / 100;
+            payData.total += Math.floor((price / (personsCount + (product.isMine ? 1 : 0))) * 100) / 100;
             
             if (payData.paymentDetails.length > 0) {
                 payData.paymentDetails += ', ';
