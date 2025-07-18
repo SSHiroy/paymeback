@@ -53,7 +53,7 @@ export function generatePayNowQR(
         TL("01", "0") +                     // Proxy type: 0 = mobile
         TL("02", "+65" + phone) +                  // Phone number
         TL("03", "1") +                     // Editable: 1 = true
-        TL("04", expiry + "000000");                  // Expiry date YYYYMMDDHHMMSS
+        TL("04", daysFromNow(expiry) + '000000');  // Expiry date YYYYMMDDHHMMSS
 
     // Full payload
     let payload =
