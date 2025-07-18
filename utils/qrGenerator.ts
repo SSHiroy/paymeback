@@ -8,6 +8,10 @@ const daysFromNow = (days: number): string => {
 
 export const DefaultDaysToExpiry = 7;
 
+function TL(tag: string, value: string): string {
+  return `${tag}${String(value.length).padStart(2, "0")}${value}`;
+}
+
 function crc16ccittFalse(data: string): string {
   let crc = 0xFFFF;
   
@@ -38,17 +42,40 @@ function crc16ccittFalse(data: string): string {
 * @returns 
 */
 export function generatePayNowQR(
-  phone: string, 
-  amount: number, 
-  note: string = 'paymeback Request', 
+  phone: string,
+  amount: number,
+  note: string = 'paymeback Request',
   expiry: number = DefaultDaysToExpiry): string {
-    
-    const payString = '00020101021126500009SG.PAYNOW010100211+65' +
-    `${phone}030100408${daysFromNow(expiry)}5204000053037025404` +
-    `${amount.toFixed(2)}5802SG5902NA6009Singapore62080104` +
-    `${note}6304`;
-    console.log('payString:', payString);
-    console.log('crc:', crc16ccittFalse(payString));
-    
-    return payString + crc16ccittFalse(payString);
+
+    // Merchant Info (ID 26)
+    const merchantInfo =
+        TL("00", "SG.PAYNOW") +             // Globally Unique Identifier
+        TL("01", "0") +                     // Proxy type: 0 = mobile
+        TL("02", "+65" + phone) +                  // Phone number
+        TL("03", "1") +                     // Editable: 1 = true
+        TL("04", expiry + "000000");                  // Expiry date YYYYMMDDHHMMSS
+
+    // Full payload
+    let payload =
+        TL("00", "01") +                     // Payload format indicator
+        TL("01", "12") +                     // Point of initiation method (dynamic)
+        TL("26", merchantInfo) +            // Merchant Account Information
+        TL("52", "0000") +                  // Merchant Category Code
+        TL("53", "702") +                   // Currency code (702 = SGD)
+        TL("54", amount.toFixed(2)) +       // Amount
+        TL("58", "SG") +                    // Country Code
+        TL("59", "NA") +                    // Merchant Name
+        TL("60", "Singapore");              // Merchant City
+
+    if (note) {
+        payload += TL("62", TL("01", note));
+    }
+
+    // CRC tag
+    payload += "6304";
+
+    console.log('Payload:', payload);
+    console.log('crc:', crc16ccittFalse(payload));
+
+    return payload + crc16ccittFalse(payload);
   }
