@@ -1,6 +1,28 @@
-# Welcome to your Expo app 👋
+# PayMeBack
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+An app that helps scan receipts, calculate how much each person owes and generates individual PayNow QR codes for them to scan and pay. It is fast, simple and compliant with Singapore's PayNow QR standard.
+
+## Features
+### Receipt Parser
+#### Key Features
+It parses text extracted from receipt images (via Optical Character Recognition - OCR) and attempts to identify product descriptions and their corresponding prices. It then structures this information into a `BillForm` object and saves it as a JSON file.
+- Utilises `react-native-mlkit-ocr` to extract text from an image URI
+- Filters text elements to identify potential prices using regular expressions
+
+### Payment Generator
+#### Key Features
+It processes receipt information and calculates how much each person owes. It takes a structured bill form, iterates through products and the people associated with each product, and calculates the amounts to be paid per person.
+- Calculates the total amount owed by each person for shared products.
+- Handles products assigned to multiple people.
+
+### QR Code Generator
+It offers utility to generate EMVCo-compatible QR code payloads for PayNow transactions in Singapore, allowing the user to create QR codes that can be scanned by banking apps to initiate payments.
+#### KEy Features
+- Generates PayNow QR payloads for payments to valid Singapore mobile numbers.
+- Supports specifying the payment amount
+- Allows adding a short note (reference) to the transaction
+- Sets an expiry date for the QR code (defaults to 7 days)
+- Calculates the CRC16-CCITT-FALSE checksum for the payload
 
 ## Get started
 
